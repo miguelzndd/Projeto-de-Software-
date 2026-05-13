@@ -70,3 +70,6 @@ Consulte:
 - `GET /api/status`
 
 O campo `persistencia` mostra se o backend ativo está em `firestore` ou `memory`.
+
+
+## Padrão Criacional - Singleton
