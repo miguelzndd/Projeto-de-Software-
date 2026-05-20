@@ -73,3 +73,5 @@ O campo `persistencia` mostra se o backend ativo está em `firestore` ou `memory
 
 
 ## Padrão Criacional - Singleton
+
+O padrão Singleton foi utilizado para garantir que uma classe possua apenas uma única instância durante toda a execução da aplicação. Isso permite centralizar o gerenciamento de recursos compartilhados, evitando múltiplas inicializações desnecessárias e melhorando a organização do sistema. 
