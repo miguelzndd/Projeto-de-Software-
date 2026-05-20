@@ -23,21 +23,163 @@ from app.models.biblioteca import CategoriaBiblioteca
 try:
     import firebase_admin
     from firebase_admin import credentials, firestore
-except Exception:  # pragma: no cover - dependência opcional em runtime
+except Exception:
     firebase_admin = None
     credentials = None
     firestore = None
 
 
-_LOCK = Lock()
-_CLIENT = None
-_INITIALIZED = False
-_STATUS = {
-    'backend': 'memory',
-    'ativo': False,
-    'motivo': 'Firebase não inicializado',
-    'project_id': None,
-}
+class PersistenceManager:
+
+    _instance: PersistenceManager | None = None
+    _lock: Lock = Lock()
+
+    def __new__(cls) -> PersistenceManager:
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super().__new__(cls)
+                cls._instance._inicializado = False
+        return cls._instance
+
+    @classmethod
+    def get_instance(cls) -> PersistenceManager:
+        return cls()
+
+    def __init__(self):
+        if self._inicializado:
+            return
+        self._inicializado = True
+        self._client = None
+        self._firebase_inicializado = False
+        self._write_lock = Lock()
+        self._status = {
+            'backend': 'memory',
+            'ativo': False,
+            'motivo': 'Firebase não inicializado',
+            'project_id': None,
+        }
+
+
+    def status(self) -> dict:
+        self._garantir_cliente()
+        return dict(self._status)
+
+    def carregar(self, usuarios_db: dict, contas_db: dict, sessoes_db: dict, historias_db: dict) -> bool:
+        client = self._garantir_cliente()
+        if client is None:
+            return False
+
+        try:
+            snapshot = client.collection(_collection_name()).document(_document_name()).get()
+            if not snapshot.exists:
+                return False
+
+            payload = snapshot.to_dict() or {}
+            state = payload.get('state') if isinstance(payload.get('state'), dict) else payload
+            if not isinstance(state, dict):
+                return False
+
+            _desserializar_state(state, usuarios_db, contas_db, sessoes_db, historias_db)
+            return True
+        except Exception as exc:
+            self._status.update({
+                'backend': 'memory',
+                'ativo': False,
+                'motivo': f'Falha ao carregar estado: {exc}',
+            })
+            return False
+
+    def salvar(self, usuarios_db: dict, contas_db: dict, sessoes_db: dict, historias_db: dict) -> bool:
+        client = self._garantir_cliente()
+        if client is None:
+            return False
+
+        state = _serializar_state(usuarios_db, contas_db, sessoes_db, historias_db)
+
+        try:
+            with self._write_lock:
+                client.collection(_collection_name()).document(_document_name()).set(
+                    {
+                        'state': state,
+                        'updated_at': datetime.now().isoformat(),
+                    },
+                    merge=True,
+                )
+            return True
+        except Exception as exc:
+            self._status.update({
+                'backend': 'memory',
+                'ativo': False,
+                'motivo': f'Falha ao salvar estado: {exc}',
+            })
+            return False
+
+    def _garantir_cliente(self):
+        if self._firebase_inicializado:
+            return self._client
+
+        self._firebase_inicializado = True
+
+        if firebase_admin is None or credentials is None or firestore is None:
+            self._status = {
+                'backend': 'memory',
+                'ativo': False,
+                'motivo': 'Dependência firebase-admin não instalada',
+                'project_id': None,
+            }
+            return None
+
+        cred_json = os.getenv('FIREBASE_SERVICE_ACCOUNT_JSON', '').strip()
+        cred_path = (
+            os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH', '').strip()
+            or os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '').strip()
+        )
+        project_id = os.getenv('FIREBASE_PROJECT_ID', '').strip() or None
+
+        try:
+            if not firebase_admin._apps:
+                cred = None
+                if cred_json:
+                    cred = credentials.Certificate(json.loads(cred_json))
+                elif cred_path:
+                    cred = credentials.Certificate(cred_path)
+
+                options = {'projectId': project_id} if project_id else None
+                if cred:
+                    firebase_admin.initialize_app(cred, options=options)
+                else:
+                    firebase_admin.initialize_app(options=options)
+
+            self._client = firestore.client()
+            self._status = {
+                'backend': 'firestore',
+                'ativo': True,
+                'motivo': 'Conectado',
+                'project_id': project_id,
+            }
+        except Exception as exc:
+            self._client = None
+            self._status = {
+                'backend': 'memory',
+                'ativo': False,
+                'motivo': f'Falha ao iniciar Firebase: {exc}',
+                'project_id': project_id,
+            }
+
+        return self._client
+
+
+
+def obter_status_persistencia() -> dict:
+    return PersistenceManager.get_instance().status()
+
+
+def carregar_estado(usuarios_db: dict, contas_db: dict, sessoes_db: dict, historias_db: dict) -> bool:
+    return PersistenceManager.get_instance().carregar(usuarios_db, contas_db, sessoes_db, historias_db)
+
+
+def salvar_estado(usuarios_db: dict, contas_db: dict, sessoes_db: dict, historias_db: dict) -> bool:
+    return PersistenceManager.get_instance().salvar(usuarios_db, contas_db, sessoes_db, historias_db)
 
 
 def _collection_name() -> str:
@@ -86,68 +228,6 @@ def _parse_tipo_notificacao(valor: str | None) -> TipoNotificacao:
         return TipoNotificacao(valor)
     except Exception:
         return TipoNotificacao.RECOMENDACAO
-
-
-def _build_firestore_client():
-    """Inicializa cliente Firestore caso as credenciais estejam disponíveis."""
-    global _CLIENT, _INITIALIZED, _STATUS
-    if _INITIALIZED:
-        return _CLIENT
-
-    _INITIALIZED = True
-
-    if firebase_admin is None or credentials is None or firestore is None:
-        _STATUS = {
-            'backend': 'memory',
-            'ativo': False,
-            'motivo': 'Dependência firebase-admin não instalada',
-            'project_id': None,
-        }
-        return None
-
-    cred_json = os.getenv('FIREBASE_SERVICE_ACCOUNT_JSON', '').strip()
-    cred_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH', '').strip() or os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '').strip()
-    project_id = os.getenv('FIREBASE_PROJECT_ID', '').strip() or None
-
-    try:
-        if not firebase_admin._apps:
-            cred = None
-            if cred_json:
-                cred = credentials.Certificate(json.loads(cred_json))
-            elif cred_path:
-                cred = credentials.Certificate(cred_path)
-
-            if cred:
-                options = {'projectId': project_id} if project_id else None
-                firebase_admin.initialize_app(cred, options=options)
-            else:
-                # Suporta ambientes com credenciais padrão (ex.: Cloud Run/GCP)
-                options = {'projectId': project_id} if project_id else None
-                firebase_admin.initialize_app(options=options)
-
-        _CLIENT = firestore.client()
-        _STATUS = {
-            'backend': 'firestore',
-            'ativo': True,
-            'motivo': 'Conectado',
-            'project_id': project_id,
-        }
-        return _CLIENT
-    except Exception as exc:  # pragma: no cover - depende de ambiente
-        _CLIENT = None
-        _STATUS = {
-            'backend': 'memory',
-            'ativo': False,
-            'motivo': f'Falha ao iniciar Firebase: {exc}',
-            'project_id': project_id,
-        }
-        return None
-
-
-def obter_status_persistencia() -> dict:
-    """Retorna o status atual da camada de persistência."""
-    _build_firestore_client()
-    return dict(_STATUS)
 
 
 def _serializar_state(usuarios_db: dict, contas_db: dict, sessoes_db: dict, historias_db: dict) -> dict:
@@ -258,7 +338,7 @@ def _serializar_state(usuarios_db: dict, contas_db: dict, sessoes_db: dict, hist
     return {
         'schema_version': 1,
         'gerado_em': datetime.now().isoformat(),
-        'contas': dict(contas_db),
+'contas': dict(contas_db),
         'sessoes': dict(sessoes_db),
         'usuarios': usuarios_serializados,
         'historias': historias_serializadas,
@@ -315,7 +395,6 @@ def _desserializar_state(state: dict, usuarios_db: dict, contas_db: dict, sessoe
     historias_origem = state.get('historias', {})
     historias_items = historias_origem.items() if isinstance(historias_origem, dict) else []
 
-    # Primeira passada: cria histórias base
     for historia_id, dados in historias_items:
         if not isinstance(dados, dict):
             continue
@@ -331,7 +410,6 @@ def _desserializar_state(state: dict, usuarios_db: dict, contas_db: dict, sessoe
         historia.data_atualizacao = _parse_iso(dados.get('data_atualizacao'), historia.data_atualizacao)
         historias_db[historia_id] = historia
 
-    # Segunda passada: cria vínculos complexos
     for historia_id, dados in historias_items:
         historia = historias_db.get(historia_id)
         if not historia or not isinstance(dados, dict):
@@ -374,7 +452,6 @@ def _desserializar_state(state: dict, usuarios_db: dict, contas_db: dict, sessoe
                     usuario = usuarios_db.get(comentario_data.get('usuario_id'))
                     if not isinstance(usuario, Leitor):
                         continue
-
                     comentario = Comentario(
                         id=comentario_data.get('id', ''),
                         usuario=usuario,
@@ -425,14 +502,12 @@ def _desserializar_state(state: dict, usuarios_db: dict, contas_db: dict, sessoe
                 )
             except ValueError:
                 continue
-
             avaliacao.data_criacao = _parse_iso(avaliacao_data.get('data_criacao'), avaliacao.data_criacao)
             historia.adicionar_avaliacao(avaliacao)
             usuario._avaliacoes.append(avaliacao)
 
         historia.data_atualizacao = _parse_iso(dados.get('data_atualizacao'), historia.data_atualizacao)
 
-    # Restaura dados específicos de leitor/autor
     for usuario_id, dados in metadados_usuarios.items():
         usuario = usuarios_db.get(usuario_id)
         if not usuario or not isinstance(dados, dict):
@@ -476,57 +551,5 @@ def _desserializar_state(state: dict, usuarios_db: dict, contas_db: dict, sessoe
                 notificacao.lida = bool(notif_data.get('lida', False))
                 notificacao.data_criacao = _parse_iso(notif_data.get('data_criacao'), notificacao.data_criacao)
                 usuario.adicionar_notificacao(notificacao)
-
-
-def carregar_estado(usuarios_db: dict, contas_db: dict, sessoes_db: dict, historias_db: dict) -> bool:
-    """Carrega estado do Firestore (se configurado)."""
-    client = _build_firestore_client()
-    if client is None:
-        return False
-
-    try:
-        snapshot = client.collection(_collection_name()).document(_document_name()).get()
-        if not snapshot.exists:
-            return False
-
-        payload = snapshot.to_dict() or {}
-        state = payload.get('state') if isinstance(payload.get('state'), dict) else payload
-        if not isinstance(state, dict):
-            return False
-
-        _desserializar_state(state, usuarios_db, contas_db, sessoes_db, historias_db)
-        return True
-    except Exception as exc:  # pragma: no cover - depende de ambiente
-        _STATUS.update({
-            'backend': 'memory',
-            'ativo': False,
-            'motivo': f'Falha ao carregar estado: {exc}',
-        })
-        return False
-
-
-def salvar_estado(usuarios_db: dict, contas_db: dict, sessoes_db: dict, historias_db: dict) -> bool:
-    """Salva estado completo no Firestore (se configurado)."""
-    client = _build_firestore_client()
-    if client is None:
-        return False
-
-    state = _serializar_state(usuarios_db, contas_db, sessoes_db, historias_db)
-
-    try:
-        with _LOCK:
-            client.collection(_collection_name()).document(_document_name()).set(
-                {
-                    'state': state,
-                    'updated_at': datetime.now().isoformat(),
-                },
-                merge=True,
-            )
-        return True
-    except Exception as exc:  # pragma: no cover - depende de ambiente
-        _STATUS.update({
-            'backend': 'memory',
-            'ativo': False,
-            'motivo': f'Falha ao salvar estado: {exc}',
-        })
-        return False
+                  
+        
