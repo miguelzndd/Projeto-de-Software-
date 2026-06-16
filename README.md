@@ -75,3 +75,9 @@ O campo `persistencia` mostra se o backend ativo está em `firestore` ou `memory
 ## Padrão Criacional - Singleton
 
 O padrão Singleton foi utilizado para garantir que uma classe possua apenas uma única instância durante toda a execução da aplicação. Isso permite centralizar o gerenciamento de recursos compartilhados, evitando múltiplas inicializações desnecessárias e melhorando a organização do sistema. 
+
+## Padrão Comportamental - Template Method
+O padrão Template Method foi utilizado para definir a estrutura geral de um algoritmo em uma classe base, permitindo que etapas específicas sejam implementadas ou sobrescritas por subclasses. Dessa forma, promove-se o reaproveitamento de código, a padronização dos processos e a flexibilidade para adaptar comportamentos sem alterar a lógica principal do algoritmo.
+
+## Padrão Estrutural - Proxy
+O padrão Proxy foi utilizado para fornecer um objeto intermediário que controla o acesso a outro objeto. Essa abordagem permite adicionar funcionalidades como controle de acesso, validação, monitoramento ou otimização de recursos sem modificar diretamente a implementação do objeto original, contribuindo para uma arquitetura mais organizada e desacoplada
