@@ -146,7 +146,6 @@ Analisou as funcionalidades implementadas, como autenticação, perfil de usuár
 
 **Contato:** +55 82 9410-6027
 
---- 
 ### Yasmim
 
 A participante realizou um primeiro contato com a plataforma e compartilhou algumas observações iniciais sobre a experiência de uso.
