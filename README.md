@@ -146,7 +146,24 @@ Analisou as funcionalidades implementadas, como autenticação, perfil de usuár
 
 **Contato:** +55 82 9410-6027
 
----
+--- 
+### Yasmim
+
+A participante realizou um primeiro contato com a plataforma e compartilhou algumas observações iniciais sobre a experiência de uso.
+
+Inicialmente, destacou que explorou a aplicação apenas por um curto período de tempo, ressaltando que ainda não conheceu todas as funcionalidades disponíveis.
+
+Em relação à leitura das obras, observou que alguns capítulos apresentavam trechos que ocupavam apenas parte da página, continuando na página seguinte mesmo havendo espaço disponível. A participante considerou que essa questão pode estar relacionada à formatação realizada pelos próprios escritores, e não necessariamente ao layout da plataforma.
+
+Também percebeu que o catálogo ainda possui uma quantidade reduzida de livros, mas avaliou positivamente a organização por categorias, destacando que esse recurso facilita a navegação e a busca por conteúdos de interesse.
+
+Outro ponto elogiado foi a possibilidade de personalização da leitura, permitindo alterar cores, fontes e tamanho dos textos. Durante os testes, porém, relatou dificuldade para retornar à página em que estava lendo após realizar essas alterações, sendo direcionada ao início da obra. A própria participante destacou que essa impressão pode ter sido influenciada pela pouca familiaridade com a plataforma naquele momento.
+
+Por fim, demonstrou satisfação com o sistema de acompanhamento de progresso da leitura, especialmente pela exibição da porcentagem concluída. Também considerou interessante a proposta de permitir que um mesmo usuário atue tanto como leitor quanto como escritor dentro da plataforma.
+
+De modo geral, a participante apresentou uma avaliação positiva da aplicação, destacando principalmente as opções de personalização, a organização por categorias, o acompanhamento do progresso de leitura e a proposta colaborativa da plataforma.
+
+**contato:** 55 82 9976-6322
 
 ### Considerações Gerais
 
