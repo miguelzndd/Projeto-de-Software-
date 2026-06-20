@@ -72,15 +72,147 @@ Consulte:
 O campo `persistencia` mostra se o backend ativo está em `firestore` ou `memory`.
 
 
-## Padrão Criacional - Singleton
+# Padrões de Projeto Utilizados
 
-O padrão Singleton foi utilizado para garantir que uma classe possua apenas uma única instância durante toda a execução da aplicação. Isso permite centralizar o gerenciamento de recursos compartilhados, evitando múltiplas inicializações desnecessárias e melhorando a organização do sistema. 
+Durante o desenvolvimento do sistema foram aplicados padrões de projeto com o objetivo de melhorar a organização, manutenção e confiabilidade da aplicação.
 
-## Padrão Comportamental - Template Method
-O padrão Template Method foi utilizado para definir a estrutura geral de um algoritmo em uma classe base, permitindo que etapas específicas sejam implementadas ou sobrescritas por subclasses. Dessa forma, promove-se o reaproveitamento de código, a padronização dos processos e a flexibilidade para adaptar comportamentos sem alterar a lógica principal do algoritmo.
+---
 
-## Padrão Estrutural - Proxy
-O padrão Proxy foi utilizado para fornecer um objeto intermediário que controla o acesso a outro objeto. Essa abordagem permite adicionar funcionalidades como controle de acesso, validação, monitoramento ou otimização de recursos sem modificar diretamente a implementação do objeto original, contribuindo para uma arquitetura mais organizada e desacoplada
+## Singleton
+
+### Localização
+
+Classe `PersistenceManager`
+
+### Implementação
+
+```python
+class PersistenceManager:
+
+    _instance: PersistenceManager | None = None
+    _lock: Lock = Lock()
+
+    def __new__(cls) -> PersistenceManager:
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super().__new__(cls)
+                cls._instance._inicializado = False
+        return cls._instance
+
+    @classmethod
+    def get_instance(cls) -> PersistenceManager:
+        return cls()
+```
+
+### Objetivo
+
+O padrão Singleton foi utilizado para garantir que exista apenas uma instância responsável pelo gerenciamento da persistência dos dados da aplicação.
+
+### Benefícios
+
+* Evita múltiplas conexões desnecessárias com o banco de dados.
+* Centraliza o gerenciamento da persistência.
+* Garante consistência durante operações de leitura e escrita.
+
+---
+
+## Template Method
+
+### Localização
+
+Classe abstrata `EstadoSerializer`
+
+### Implementação
+
+```python
+class EstadoSerializer(ABC):
+
+    def serializar(self, usuarios_db, contas_db, sessoes_db, historias_db) -> dict:
+        senhas = self._coletar_senhas(contas_db)
+        usuarios = self._serializar_usuarios(usuarios_db, senhas)
+        historias = self._serializar_historias(historias_db)
+        return self._montar_payload(contas_db, sessoes_db, usuarios, historias)
+```
+
+Métodos implementados pelas subclasses:
+
+```python
+@abstractmethod
+def _serializar_usuarios(self, usuarios_db, senhas) -> dict: pass
+
+@abstractmethod
+def _serializar_historias(self, historias_db) -> dict: pass
+
+@abstractmethod
+def _restaurar_usuarios(self, state, contas_db, usuarios_db) -> dict: pass
+
+@abstractmethod
+def _restaurar_historias(self, state, usuarios_db, historias_db): pass
+```
+
+Subclasse responsável pela implementação concreta:
+
+```python
+class FirestoreSerializer(EstadoSerializer):
+```
+
+### Objetivo
+
+O padrão Template Method foi utilizado para definir o fluxo geral de serialização e desserialização dos dados, permitindo que subclasses implementem detalhes específicos do processo.
+
+### Benefícios
+
+* Padroniza o processo de persistência.
+* Facilita futuras extensões para outros bancos de dados.
+* Evita duplicação de código.
+
+---
+
+## Proxy
+
+### Localização
+
+Classe `PersistenceManagerProxy`
+
+### Implementação
+
+```python
+class PersistenceManagerProxy:
+
+    def __init__(self):
+        self._manager = PersistenceManager.get_instance()
+
+    def carregar(self, usuarios_db, contas_db, sessoes_db, historias_db) -> bool:
+        if not isinstance(usuarios_db, dict) or not isinstance(historias_db, dict):
+            return False
+        return self._manager.carregar(
+            usuarios_db,
+            contas_db,
+            sessoes_db,
+            historias_db
+        )
+
+    def salvar(self, usuarios_db, contas_db, sessoes_db, historias_db) -> bool:
+        if not isinstance(usuarios_db, dict) or not isinstance(historias_db, dict):
+            return False
+        return self._manager.salvar(
+            usuarios_db,
+            contas_db,
+            sessoes_db,
+            historias_db
+        )
+```
+
+### Objetivo
+
+O padrão Proxy foi utilizado para atuar como intermediário entre a aplicação e o gerenciador de persistência, realizando validações antes de permitir o acesso às operações de leitura e gravação.
+
+### Benefícios
+
+* Adiciona uma camada de segurança.
+* Impede operações com dados inválidos.
+* Controla o acesso ao objeto principal sem modificar sua implementação.
+
 
 ## Relatório Final: Feedback dos Usuários
 
