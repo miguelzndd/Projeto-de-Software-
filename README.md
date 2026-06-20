@@ -81,3 +81,73 @@ O padrão Template Method foi utilizado para definir a estrutura geral de um alg
 
 ## Padrão Estrutural - Proxy
 O padrão Proxy foi utilizado para fornecer um objeto intermediário que controla o acesso a outro objeto. Essa abordagem permite adicionar funcionalidades como controle de acesso, validação, monitoramento ou otimização de recursos sem modificar diretamente a implementação do objeto original, contribuindo para uma arquitetura mais organizada e desacoplada
+
+## Relatório Final: ## Feedback dos Usuários
+
+Para validar a aplicação, foram realizados testes com diferentes usuários, que utilizaram a plataforma e compartilharam suas impressões sobre a experiência de uso.
+
+### Larissa
+
+A participante avaliou a plataforma de forma positiva, destacando a organização da interface e a limpeza visual do sistema. Segundo seu relato, a disposição dos elementos contribui para uma navegação agradável e facilita a utilização da plataforma.
+
+**Contato:** +55 82 9386-9784
+
+### Luis
+
+O participante avaliou positivamente a plataforma, destacando a facilidade para localizar obras e navegar pelo catálogo. Também ressaltou a eficiência do sistema de busca, especialmente a possibilidade de utilizar filtros para encontrar conteúdos específicos. De modo geral, considerou a aplicação bem desenvolvida e apresentou uma avaliação bastante favorável da experiência de uso.
+
+**Contato:** +55 82 9147-5856
+
+### Gustavo Avelino
+
+O participante avaliou positivamente a plataforma, destacando a fluidez da navegação e o bom desempenho do sistema durante os testes. Segundo seu relato, a aplicação apresentou funcionamento adequado, sem problemas aparentes, transmitindo uma experiência de uso satisfatória.
+
+**Contato:** +55 82 8188-8877
+
+### Jaciara
+
+A participante acessou a plataforma e confirmou o funcionamento correto das funcionalidades testadas. Durante a avaliação, relatou que o sistema estava operando normalmente e expressou satisfação com a experiência de uso, classificando a plataforma de forma bastante positiva. Ao final dos testes, atribuiu nota **10/10** ao projeto.
+
+**Contato:** +55 82 9364-7583
+
+### Ronaldy Lacerda
+
+Relatou que a plataforma apresentou bom desempenho, sem travamentos durante a navegação. Também destacou positivamente o modo de leitura, que ajusta automaticamente a tonalidade da tela para uma coloração mais amarelada, proporcionando maior conforto visual ao usuário.
+
+**Contato:** +55 82 9140-6271
+
+### Anna Luiza
+
+Avaliou a plataforma voltada para livros e demonstrou uma reação positiva ao conceito apresentado. Após navegar pelo sistema, afirmou que gostou da proposta e da experiência oferecida.
+
+**Contato:** +55 82 9139-5362
+
+### Gustavo Henrique
+
+Testou a aplicação e classificou o resultado como muito bom, demonstrando surpresa ao descobrir que o sistema havia sido desenvolvido pelo próprio autor do projeto.
+
+**Contato:** +55 82 9344-9589
+
+### Gustavo Terto
+
+Também utilizou a plataforma e considerou a ideia interessante, avaliando positivamente a proposta do sistema.
+
+**Contato:** +55 82 8729-6103
+
+### Gledsa
+
+Acessou a aplicação, realizou testes nas funcionalidades disponíveis e relatou ter gostado da plataforma.
+
+**Contato:** +55 82 9352-9365
+
+### Raiane
+
+Analisou as funcionalidades implementadas, como autenticação, perfil de usuário, avaliações, listas personalizadas, interação social, sistema de progresso e mecanismos de busca. Após a análise, parabenizou o desenvolvimento e informou que as funcionalidades apresentadas estavam funcionando corretamente.
+
+**Contato:** +55 82 9410-6027
+
+---
+
+### Considerações Gerais
+
+De forma geral, os usuários demonstraram boa aceitação da plataforma, destacando principalmente a proposta do sistema, a organização das funcionalidades, a facilidade de navegação e o funcionamento adequado da aplicação durante os testes realizados. Os feedbacks recebidos indicam uma experiência de uso positiva e reforçam a qualidade das funcionalidades desenvolvidas.
