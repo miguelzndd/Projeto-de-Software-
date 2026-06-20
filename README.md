@@ -82,7 +82,7 @@ O padrão Template Method foi utilizado para definir a estrutura geral de um alg
 ## Padrão Estrutural - Proxy
 O padrão Proxy foi utilizado para fornecer um objeto intermediário que controla o acesso a outro objeto. Essa abordagem permite adicionar funcionalidades como controle de acesso, validação, monitoramento ou otimização de recursos sem modificar diretamente a implementação do objeto original, contribuindo para uma arquitetura mais organizada e desacoplada
 
-## Relatório Final: ## Feedback dos Usuários
+## Relatório Final: Feedback dos Usuários
 
 Para validar a aplicação, foram realizados testes com diferentes usuários, que utilizaram a plataforma e compartilharam suas impressões sobre a experiência de uso.
 
